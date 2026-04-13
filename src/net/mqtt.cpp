@@ -4,6 +4,7 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "../inputs/config.h"
+#include "../messages/payloads.h"
 
 static WiFiClient   wifiClient;
 static PubSubClient mqttClient(wifiClient);
@@ -57,17 +58,22 @@ void publishHeartbeat() {
   Serial.println(buffer);
 }
 
-void publishButtonEvent(const char* side, const char* event) {
-  char topic[64];
-  snprintf(topic, sizeof(topic), "pinball/%s/button", DEVICE_ID);
+void publishButtonPress(ButtonSide side, uint32_t timestampMs) {
+  if (!mqttClient.connected()) return;
 
-  char payload[64];
-  snprintf(payload, sizeof(payload), "{\"side\":\"%s\",\"event\":\"%s\"}", side, event);
+  char buffer[128];
+  buildButtonPressPayload(side, timestampMs, buffer, sizeof(buffer));
 
-  mqttClient.publish(topic, payload);
+  const String topic = String("pinball/") + DEVICE_ID + "/input/button";
 
-  Serial.print("[MQTT] Button event: ");
-  Serial.println(payload);
+  const uint32_t before = millis();
+  mqttClient.publish(topic.c_str(), buffer);
+  const uint32_t latency = millis() - before;
+
+  Serial.print("[MQTT] Button press published in ");
+  Serial.print(latency);
+  Serial.print("ms: ");
+  Serial.println(buffer);
 }
 
 void mqttLoop() {

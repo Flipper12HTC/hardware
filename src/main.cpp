@@ -48,10 +48,10 @@ void loop() {
   ButtonEvent evL = buttonUpdate(btnLeft,  digitalRead(PIN_BTN_LEFT),  now);
   ButtonEvent evR = buttonUpdate(btnRight, digitalRead(PIN_BTN_RIGHT), now);
 
-  if (evL == ButtonEvent::PRESS)   { Serial.println("LEFT  — PRESS");    publishButtonEvent("left",  "press"); }
-  if (evL == ButtonEvent::RELEASE) { Serial.println("LEFT  — RELEASE");  publishButtonEvent("left",  "release"); }
-  if (evR == ButtonEvent::PRESS)   { Serial.println("RIGHT — PRESS");    publishButtonEvent("right", "press"); }
-  if (evR == ButtonEvent::RELEASE) { Serial.println("RIGHT — RELEASE");  publishButtonEvent("right", "release"); }
+  if (evL == ButtonEvent::PRESS)   { Serial.println("LEFT  — PRESS");    publishButtonPress(ButtonSide::LEFT,  now); }
+  if (evL == ButtonEvent::RELEASE)   Serial.println("LEFT  — RELEASE");
+  if (evR == ButtonEvent::PRESS)   { Serial.println("RIGHT — PRESS");    publishButtonPress(ButtonSide::RIGHT, now); }
+  if (evR == ButtonEvent::RELEASE)   Serial.println("RIGHT — RELEASE");
 
   mqttLoop();
 }

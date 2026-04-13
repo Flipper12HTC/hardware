@@ -1,8 +1,9 @@
 #pragma once
 #include <cstdint>
+#include "../inputs/button.h"
 
 void setupMqtt();
 void ensureMqttConnected();
 void publishHeartbeat();
-void publishButtonEvent(const char* side, const char* event);
+void publishButtonPress(ButtonSide side, uint32_t timestampMs);
 void mqttLoop();
