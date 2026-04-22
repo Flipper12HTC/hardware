@@ -1,6 +1,6 @@
 #include "payloads.h"
 #include <ArduinoJson.h>
-#include "../inputs/config.h"
+#include "../hal/pins.h"
 
 size_t buildButtonPressPayload(ButtonSide side, uint32_t timestampMs,
                                char* buffer, size_t bufferSize) {

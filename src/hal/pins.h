@@ -1,8 +1,12 @@
 #pragma once
+#include <cstdint>
 
 // ─── Pins ───────────────────────────────────────────────
 constexpr uint8_t PIN_BTN_LEFT  = 34;
 constexpr uint8_t PIN_BTN_RIGHT = 35;
+// TODO: add PIN_TILT and PIN_DRAIN when wired
+// constexpr uint8_t PIN_TILT  = 32;
+// constexpr uint8_t PIN_DRAIN = 33;
 
 // ─── Debounce ───────────────────────────────────────────
 constexpr uint16_t DEBOUNCE_MS = 15;

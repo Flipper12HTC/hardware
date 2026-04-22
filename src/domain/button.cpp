@@ -1,7 +1,5 @@
-#include "../../src/inputs/button.h"
-#include <cstdint>
-
-static constexpr uint16_t DEBOUNCE_MS = 15;
+#include "button.h"
+#include "../hal/pins.h"
 
 ButtonState buttonInit(ButtonSide side) {
   ButtonState s;
@@ -22,6 +20,7 @@ ButtonEvent buttonUpdate(ButtonState& state, bool rawValue, uint32_t nowMs) {
 
   if (rawValue != state.lastDebounced) {
     state.lastDebounced = rawValue;
+    // INPUT_PULLUP: LOW = pressed, HIGH = released
     return rawValue ? ButtonEvent::RELEASE : ButtonEvent::PRESS;
   }
 
