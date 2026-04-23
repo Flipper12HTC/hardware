@@ -1,25 +1,13 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include "inputs/button.h"
-#include "inputs/config.h"
+#include "secrets.h"
+#include "hal/pins.h"
+#include "hal/gpio.h"
+#include "domain/button.h"
+#include "net/wifi.h"
 #include "net/mqtt.h"
 
 static ButtonState btnLeft;
 static ButtonState btnRight;
-
-static void connectWifi() {
-  const char* ssid     = "YOUR_SSID";
-  const char* password = "YOUR_PASSWORD";
-  Serial.print("[WiFi] Connecting to ");
-  Serial.print(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.print(" connected — IP: ");
-  Serial.println(WiFi.localIP());
-}
 
 void setup() {
   Serial.begin(115200);
@@ -27,13 +15,13 @@ void setup() {
   Serial.println();
   Serial.println("flipper12-hardware — starting up...");
 
-  pinMode(PIN_BTN_LEFT,  INPUT_PULLUP);
-  pinMode(PIN_BTN_RIGHT, INPUT_PULLUP);
+  hal::configureInput(PIN_BTN_LEFT,  true);
+  hal::configureInput(PIN_BTN_RIGHT, true);
 
   btnLeft  = buttonInit(ButtonSide::LEFT);
   btnRight = buttonInit(ButtonSide::RIGHT);
 
-  connectWifi();
+  wifiConnect(WIFI_SSID, WIFI_PASSWORD);
   setupMqtt();
 
   Serial.println("Setup complete.");
@@ -42,11 +30,12 @@ void setup() {
 void loop() {
   const uint32_t now = millis();
 
+  wifiEnsureConnected();
   ensureMqttConnected();
   publishHeartbeat();
 
-  ButtonEvent evL = buttonUpdate(btnLeft,  digitalRead(PIN_BTN_LEFT),  now);
-  ButtonEvent evR = buttonUpdate(btnRight, digitalRead(PIN_BTN_RIGHT), now);
+  ButtonEvent evL = buttonUpdate(btnLeft,  hal::readPin(PIN_BTN_LEFT),  now);
+  ButtonEvent evR = buttonUpdate(btnRight, hal::readPin(PIN_BTN_RIGHT), now);
 
   if (evL == ButtonEvent::PRESS)   { Serial.println("LEFT  — PRESS");    publishButtonPress(ButtonSide::LEFT,  now); }
   if (evL == ButtonEvent::RELEASE)   Serial.println("LEFT  — RELEASE");

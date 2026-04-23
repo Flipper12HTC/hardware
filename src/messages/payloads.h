@@ -1,7 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-#include "../inputs/button.h"
+#include "../domain/button.h"
 
 // Fills buffer with a JSON button press payload.
 // Returns the number of bytes written.

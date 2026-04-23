@@ -35,6 +35,7 @@ No game logic, no score, no game state. The backend decides everything.
 ```bash
 # Copy secrets template and fill in your WiFi credentials
 cp src/secrets.h.example src/secrets.h
+# Edit src/secrets.h with your real SSID and password
 ```
 
 ## Commands
@@ -60,16 +61,48 @@ clang-format -i src/**/*.cpp src/**/*.h
 
 ```
 src/
-├── main.cpp
-├── inputs/       GPIO reading + debounce (buttons, drain, tilt)
-├── net/          WiFi + MQTT client
-└── messages/     ArduinoJson payload builders
+├── main.cpp              # Composition root: init + loop dispatch only
+├── secrets.h             # Gitignored — real WiFi credentials (DO NOT COMMIT)
+├── secrets.h.example     # Template with placeholders
+├── domain/
+│   ├── button.h / .cpp   # Debounce state machine — no Arduino.h
+│   └── sensor.h / .cpp   # Tilt / drain logic — no Arduino.h
+├── hal/
+│   ├── pins.h            # Pin numbers + domain constants
+│   └── gpio.h / .cpp     # ONLY file calling digitalRead / pinMode
+├── net/
+│   ├── wifi.h / .cpp     # wifiConnect() + wifiEnsureConnected()
+│   └── mqtt.h / .cpp     # MQTT client (PubSubClient wrapper)
+└── messages/
+    └── payloads.h / .cpp # ArduinoJson payload builders (native-testable)
 
 test/
-├── test_button_debounce/
-├── test_payload_builder/
-└── test_sensor_logic/
+├── test_button_debounce/ # Unity — debounce state machine
+├── test_payload_builder/ # Unity — JSON payload correctness
+└── test_sensor_logic/    # Unity — tilt / drain state machine
 
-contracts/        MQTT schemas synced from flipper12-backend
-docs/             Wiring diagram, flashing guide
+contracts/                # MQTT schemas synced from flipper12-backend
+docs/                     # Wiring diagram, flashing guide
+```
+
+### Separation rules
+
+| Layer | Rule |
+|-------|------|
+| `domain/` | No `Arduino.h`, no `WiFi.h`, no `PubSubClient.h`. Compiles under `native` env. |
+| `hal/gpio.*` | **Only** file calling `digitalRead`, `digitalWrite`, `pinMode`. |
+| `net/` | Only place importing `WiFi.h`, `PubSubClient.h`. |
+| `messages/` | ArduinoJson only — compiles under `native` env. |
+| `main.cpp` | Orchestration only — no inline protocol or WiFi logic. |
+
+## Contracts sync
+
+MQTT schemas are copied from `backend/contracts/mqtt/` at a pinned version.
+
+**Current pinned backend SHA:** `<SHA_PLACEHOLDER>`
+
+To update:
+```bash
+cp backend/contracts/mqtt/* hardware/contracts/
+# Update the SHA in this file and in contracts/README.md
 ```
